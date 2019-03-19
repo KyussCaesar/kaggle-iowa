@@ -207,6 +207,11 @@ Source: CRAN
 Version: 0.2.1
 Hash: 88926ad9c43581fd0822a37c8ed09f05
 
+Package: logging
+Source: CRAN
+Version: 0.9-107
+Hash: f0364977057a5a411a15a77eece97e64
+
 Package: lubridate
 Source: CRAN
 Version: 1.7.4

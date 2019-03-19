@@ -1,0 +1,91 @@
+MSSubClass: factor
+MSZoning: factor
+LotFrontage: double
+LotArea: double
+Street: factor
+Alley: factor
+LotShape: integer
+LandContour: factor
+Utilities: spread into e g w s
+		
+       AllPub	1 1 1 1
+       NoSewr	1 1 1 0
+       NoSeWa	1 1 0 0
+       ELO	    1 0 0 0
+	
+LotConfig: factor
+LandSlope: integer
+Neighborhood: factor
+Condition1: factor
+Condition2: factor
+BldgType: factor
+HouseStyle: factor
+OverallQual: integer
+OverallCond: integer
+YearBuilt: integer
+YearRemodAdd: integer
+AnyRemod: (added) YearBuilt == YearRemodAdd
+RemodAfter: (added) YearRemodAdd - YearBuilt
+RoofStyle: factor
+RoofMatl: factor
+Exterior1st: factor
+Exterior2nd: factor
+MasVnrType: factor
+MasVnrArea: double
+ExterQual: factor
+ExterCond: factor
+Foundation: factor
+BsmtQual: factor
+BsmtCond: factor
+BsmtExposure: factor
+BsmtFinType1: factor
+BsmtFinSF1: double
+BsmtFinType2: factor
+BsmtFinSF2: double
+BsmtUnfSF: double
+TotalBsmtSF: double
+Heating: factor
+HeatingQC: factor
+CentralAir: bool
+
+       N	0
+       Y	1
+
+Electrical: factor
+1stFlrSF: double
+2ndFlrSF: double
+LowQualFinSF: double
+GrLivArea: double
+BsmtFullBath: integer
+BsmtHalfBath: integer
+FullBath: integer
+HalfBath: integer
+Bedroom: integer
+Kitchen: integer
+KitchenQual: factor
+TotRmsAbvGrd: integer
+Functional: factor
+Fireplaces: integer
+FireplaceQu: factor
+GarageType: factor
+GarageYrBlt: integer
+GarageFinish: factor
+GarageCars: integer
+GarageArea: double
+GarageQual: factor
+GarageCond: factor
+PavedDrive: factor
+WoodDeckSF: double
+OpenPorchSF: double
+EnclosedPorch: double
+3SsnPorch: double
+ScreenPorch: double
+PoolArea: double
+PoolQC: factor
+Fence: factor
+MiscFeature: factor
+MiscVal: double
+MoSold: integer
+YrSold: integer
+SaleType: factor
+SaleCondition: factor

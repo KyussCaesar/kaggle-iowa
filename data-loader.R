@@ -1,10 +1,12 @@
+loginfo("Loading data-loader...")
+
 col_types = cols(
     MSSubClass = col_factor(),
     MSZoning = col_factor(),
     LotFrontage = col_double(),
     LotArea = col_double(),
     Street = col_factor(),
-    Alley = col_character(),
+    Alley = col_factor(),
     LotShape = col_factor(),
     LandContour = col_factor(),
     Utilities = col_factor(),
@@ -82,6 +84,7 @@ col_types = cols(
 )
 
 load_data = function(filename) {
+    paste("Loading ", filename) %>% loginfo()
     read_csv(filename, col_types=col_types, na=character()) %>%
         # replace NA as appropriate
         mutate(LotFrontage = if_else(is.na(LotFrontage), 0, LotFrontage)) %>%

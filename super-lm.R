@@ -1,22 +1,36 @@
+loginfo("Loading lm regressors")
+
+lm.result = function(models) {
+    loginfo("Completed fitting an lm")
+    list(
+        model = models,
+        class = "lm",
+        fitted = function()
+            named.apply(names(models), function(x) models[[x]]$fitted.values)
+        ,
+        predict = function(test_x)
+            named.apply(names(models), function(x) predict(models[[x]], test_x))
+    )
+}
+
 lm_basic = list(
     name = "basic lm",
-    call = function(train_x, train_y) {
-        result = list()
+    train = function(train_x, train_y) {
+        models = list()
         for (name in colnames(train_y)) {
-            result[[name]] =
+            models[[name]] =
                 paste(name, "~ .") %>%
                 as.formula() %>%
-                lm(data=cbind(train_x, train_y)) %>%
-                (function(x) x$fitted.values)
+                lm(data=cbind(train_x, train_y))
         }
 
-        data.frame(result)
+        lm.result(models)
     }
 )
 
 lm_reduced = list(
     name = "reduced lm",
-    call = function(train_x, train_y) {
+    train = function(train_x, train_y) {
         train_x.factors = train_x[,sapply(train_x, is.factor)]
         map.factor.levels = train_x.factors %>% sapply(levels)
 
@@ -44,9 +58,8 @@ lm_reduced = list(
         # wrap xs in backticks so formula doesn't freak out.
         nsp = function(x) paste0("`", x, "`")
 
-        result = list()
+        models = list()
         for (name in colnames(train_y)) {
-            # find significant columns
             sig.cols =
                 paste(name, "~ .") %>%
                 as.formula() %>%
@@ -64,20 +77,19 @@ lm_reduced = list(
                 nsp()
 
             # then fit a new one based on those columns
-            result[[name]] =
+            models[[name]] =
                 paste(nsp(name), "~", paste(sig.cols, collapse = " + ")) %>%
                 as.formula() %>%
-                lm(data=cbind(train_x, train_y)) %>%
-                (function(x) x$fitted.values)
+                lm(data=cbind(train_x, train_y))
         }
 
-        data.frame(result)
+        lm.result(models)
     }
 )
 
 lm_crossed = list(
     name = "crossed lm",
-    call = function(train_x, train_y) {
+    train = function(train_x, train_y) {
         train_x.factors = train_x[,sapply(train_x, is.factor)]
         map.factor.levels = train_x.factors %>% sapply(levels)
 
@@ -105,7 +117,7 @@ lm_crossed = list(
         # wrap xs in backticks so formula doesn't freak out.
         nsp = function(x) paste0("`", x, "`")
 
-        result = list()
+        models = list()
         for (name in colnames(train_y)) {
             # find significant columns
             sig.cols =
@@ -126,13 +138,12 @@ lm_crossed = list(
                 nsp()
 
             # then fit a new one based on those columns
-            result[[name]] =
+            models[[name]] =
                 paste(nsp(name), "~", paste(sig.cols, collapse = " * ")) %>%
                 as.formula() %>%
-                lm(data=cbind(train_x, train_y)) %>%
-                (function(x) x$fitted.values)
+                lm(data=cbind(train_x, train_y))
         }
 
-        data.frame(result)
+        lm.result(models)
     }
 )
