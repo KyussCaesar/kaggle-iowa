@@ -17,6 +17,13 @@ targets = c("SalePrice")
 train_x = train %>% select(-targets)
 train_y = train %>% select(targets)
 
+#' Train a regressor on the training data and evalute it's performance on
+#' the test set.
+#' @param regressor the regressor to use.
+#' @param train_x features (training set)
+#' @param train_y targets (training set)
+#' @param test_x features (testing set)
+#' @param test_y targets (testing set)
 process_regressor = function(regressor, train_x, train_y, test_x, test_y) {
     paste("Processing regressor [", regressor$name, "]") %>% loginfo()
 
@@ -45,6 +52,11 @@ process_regressor = function(regressor, train_x, train_y, test_x, test_y) {
     )
 }
 
+#' Perform K-fold cross-validation on regressor.
+#' @param regressor the regressor to use.
+#' @param K the number of folds.
+#' @param xs features.
+#' @param ys targets.
 cross.validate = function(regressor, K, xs, ys) {
     s = sample(nrow(xs))
     fi = 1:nrow(xs) %% K
@@ -66,7 +78,7 @@ cross.validate = function(regressor, K, xs, ys) {
     proc = function(p) {
         paste("Beginning processing for fold", p$fold) %>% loginfo()
         res = process_regressor(regressor, p$train_x, p$train_y, p$test_x, p$test_y)
-        paste("Round", p$fold, "complete") %>% loginfo()
+        paste("Fold", p$fold, "complete") %>% loginfo()
         res$test.error$cv.fold = p$fold
         res$test.error
     }
@@ -77,6 +89,12 @@ cross.validate = function(regressor, K, xs, ys) {
     bind_rows()
 }
 
+#' Perform N rounds of K-fold cross validation.
+#' @param regressor the regressor to cross-validate.
+#' @param N the number of rounds to perform.
+#' @param K the number of folds to use.
+#' @param xs features
+#' @param ys targets
 n.cross.validate = function(regressor, N, K, xs, ys) {
     paste("Performing", N, "rounds of", K, "fold cross-validation") %>% loginfo()
 
