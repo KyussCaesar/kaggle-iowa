@@ -47,6 +47,12 @@ assert.eq = function(x, y, ...) {
     assert(x == y, ...)
 }
 
+assert.nz = function(x, ...) {
+    if (x %>% is.data.frame()) assert(nrow(x) != 0, ...)
+    if (length(x) == 1) assert(x != 0, ...)
+    assert(length(x) != 0)
+}
+
 #' Converts all of the factor columns in `df` to one-hot encoded variants.
 #' New columns have names of the format `oldname.level`, so for example the
 #' factor `colour` with levels `Red, Green, Blue` would expand to three columns
@@ -74,116 +80,131 @@ factors.to.one.hot = function(df) {
     data.frame(result)
 }
 
-cv.folds.sbs = function(df, n.folds) {
-    df2 = factors.to.one.hot(df)
-    strata.cols =
-        df2 %>%
-        sapply(is.factor) %>%
-        which()
+#' Partition df into n.folds folds.
+#' @param df the data frame to partition.
+#' @param n.folds the number of folds.
+#' 
+#' This function attempts to partition the data such that
+#' each fold has a similar number of examples of each level
+#' of each factor in df.
+create.folds = function(df, n.folds) {
+    paste("Partitioning", nrow(df), "rows into", n.folds, "folds") %>% loginfo()
 
-    row = c()
-    fold = c()
-    for (s in strata.cols) {
-        strata = which(df2[,s] %>% as.logical.factor())
+    clearn = function(df2, n.folds) {
+        assert.nz(df2 %>% nrow())
+        for (i in 1:ncol(df2)) {
+            if (df2[,i] %>% is.factor()) {
+                row.select = as.logical(df2[,i])
 
-        for (f in 1:n.folds) {
-            row <- append(row, sample(strata, 1))
-            fold <- append(fold, f)
+                if (all(row.select == FALSE)) {
+                    return(clearn(df2[,-i], n.folds))
+                }
+
+                rows = which(row.select)
+                s.ok = length(rows) >= n.folds
+
+                if (!s.ok) {
+                    return(clearn(df2[-rows,-i], n.folds))
+                }
+            }
         }
+
+        return(df2)
     }
 
-    data.frame(row = row, fold = fold)
-}
-cv.folds.ss = function(df, n.folds) {
-    
     # convert factors to one-hot encoding
-    df2 = factors.to.one.hot(df)
-    
-    # determine which columns are strata
-    strata.cols =
+    df2 = factors.to.one.hot(df) %>% clearn(n.folds)  
+
+    assert.nz(df2, "all rows were clearned")
+
+    # determine which rows belong to which strata
+    srf =
         df2 %>%
         sapply(is.factor) %>%
-        which()
+        which() %>%
+        lapply(
+            function(x) data.frame(
+                strata = x,
+                taken  = FALSE,
+                row    = which(df2[,x] %>% as.logical())
+            )
+        ) %>%
+        bind_rows()
 
-    # find out which strata have fewer than n.folds members
-    # omit them
-    csc = c()
-    mfd = data.frame(row=0, mfd=T)
-    for (s in strata.cols) {
-        rows = df2[,s] %>% as.logical() %>% which()
-        s.ok = length(rows) > n.folds
-        csc <- append(csc, s.ok)
-        if (!s.ok) {
-            mfd = rbind(mfd, data.frame(row=rows, mfd=T))
-        }
-    }
+    # defines how to update a fold:
+    # 1. find the strata which the fold has the fewest members of
+    # 2. pick a random row from that strata and add it to the fold
+    # 3. remove all occurences of that row from srf.
+    update = function(fold) {
+        fsmap = count.strata.in.fold(fold)
+        weakest = fsmap[order(fsmap$count),"strata"]
 
-    sc2 = strata.cols[csc]
-    srf = sc2 %>% lapply(
-        function(x) data.frame(
-            strata = x,
-            row    = which(df2[,x] %>% as.logical())
-        )
-    ) %>%
-    bind_rows()
-
-    srf = srf[sample(nrow(srf)),]
-    
-    mfd = srf %>%
-        group_by(row) %>%
-        summarise(mfd = any(strata %in% bad.strata)) %>%
-        pull(mfd)
-
-    result = data.frame(
-        fold = 1:nrow(df2) %% n.folds,
-        strata = 0,
-        row = 0
-    )
-
-    for (i in 1:nrow(srf)) {
-        if (srf[i,"row"] %in% unique(result$row)) next
-
-        strat = srf[i,"strata"]
-        rw = srf[i,"row"]
-        pref.f = result %>%
-            mutate(is.strat = strata == strat) %>%
-            group_by(fold) %>%
-            summarise(count.strat = length(which(is.strat))) %>%
-            arrange(count.strat) %>%
-            pull(fold)
-        
-        for (pf in pref.f) {
-            candidates = which(result$fold == pf & result$row == 0)
-            
-            if (length(candidates != 0)) break
+        candidate.rows = c()
+        for (weak in weakest) {
+            if (all(srf[srf$strata == weak,"taken"])) next
+            candidate.rows = srf[srf$strata == weak & srf$taken != TRUE,"row"]
+            if (length(candidate.rows) != 0) break
         }
 
-        which.one = min(candidates)
-        result[which.one,"row"] = rw
-        result[which.one,"strata"] = strat
+        if (length(candidate.rows) == 0) {
+            logerror("Zero candidates for fold update")
+            browser()
+        }
 
-        # break once all rows have been allocated
-        if (!any(result$row == 0)) break
+        if (length(candidate.rows) == 1) which.row = candidate.rows
+        else which.row = sample(candidate.rows, 1)
+
+        if (any(srf[srf$row == which.row,"taken"])) {
+            logerror("Tried to add a row which was already taken")
+            browser()
+        }
+
+        srf[srf$row == which.row,"taken"] <<- TRUE
+
+        fold %>%
+        unlist() %>%
+        append(which.row) %>%
+        list()
     }
 
-    data.frame(row = result$row, fold = result$fold)
+    count.strata.in.fold = function(fold) {
+        result = c()
+        for (row in unlist(fold)) {
+            assert(length(row) == 1)
+            result <- append(result, srf[srf$row == row,"strata"])
+        }
+
+        dd = lapply(unique(srf$strata), function(x) data.frame(strata=x, count=0)) %>% bind_rows()
+        for (r in result) {
+            which.strata = dd$strata == r
+            strata.count = dd[which.strata,"count"]
+            dd[which.strata,"count"] = strata.count + 1
+        }
+
+        return(dd)
+    }
+
+    fi = 0
+    folds = lapply(1:n.folds, function(x) list())
+    while (count(srf$taken) != nrow(srf)) {
+        folds[[fi+1]] = update(folds[[fi+1]])
+        fi = (fi + 1) %% n.folds
+        n.proc = cardinality(srf[srf$taken,"row"])
+        if (n.proc %% 30 == 0) n.proc %>% paste("rows processed") %>% loginfo()
+    }
+
+    loginfo("All rows processed, partition complete")
+
+    1:n.folds %>%
+    lapply(function(x) data.frame(fold=x, row=unlist(folds[[x]]))) %>%
+    bind_rows() %>%
+    mutate(row = as.numeric(rownames(df2)[row]))
 }
 
 cardinality = function(x) {
     length(unique(x))
 }
 
-create.folds = function(df) {
-    folds = createMultiFolds(df, k=10, times=10)
-    stupid.names = data.frame(fold=NULL, round=NULL, row=NULL)
-    
-    for (i in 1:10) {
-        for (j in 1:10) {
-            which.one = 10*(i-1) + j
-            stupid.names <- rbind(
-                stupid.names,
-                data.frame(fold=j, round=i, row=folds[[which.one]])
-            )
-        }
-    }
+count = function(x) {
+    length(which(x))
 }
