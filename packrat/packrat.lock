@@ -13,6 +13,12 @@ Source: CRAN
 Version: 1.0.0
 Hash: 6abedd7919c4457604c0aa44529a6683
 
+Package: ModelMetrics
+Source: CRAN
+Version: 1.2.2
+Hash: e822e1dcf46eb0d6263aa9f942b3829f
+Requires: Rcpp, data.table
+
 Package: R6
 Source: CRAN
 Version: 2.4.0
@@ -27,6 +33,17 @@ Package: Rcpp
 Source: CRAN
 Version: 1.0.0
 Hash: c7273c0f0bc9f5e41f4c52a8cf571f0f
+
+Package: RcppRoll
+Source: CRAN
+Version: 0.3.0
+Hash: 726781be7f8d00a0667a180202e54416
+Requires: Rcpp
+
+Package: SQUAREM
+Source: CRAN
+Version: 2017.10-1
+Hash: 468c9c5e9c9852863fd94313b880964d
 
 Package: askpass
 Source: CRAN
@@ -62,6 +79,13 @@ Version: 3.1.1
 Hash: 461cdebafe2c1cfc23ddc37527633185
 Requires: R6, processx
 
+Package: caret
+Source: CRAN
+Version: 6.0-81
+Hash: 6197b06ed8aff9bb42948d9c73411526
+Requires: ModelMetrics, foreach, ggplot2, plyr, recipes, reshape2,
+    withr
+
 Package: cellranger
 Source: CRAN
 Version: 1.1.0
@@ -93,6 +117,11 @@ Package: curl
 Source: CRAN
 Version: 3.3
 Hash: 38a30b33137041a896bd51ae0e9d1d49
+
+Package: data.table
+Source: CRAN
+Version: 1.12.0
+Hash: d382bb97e2d9dd05ad8070e41513dcb1
 
 Package: dbplyr
 Source: CRAN
@@ -129,6 +158,12 @@ Version: 0.3.0
 Hash: 770f3834b97a2c429bdecb7a5f27eb25
 Requires: magrittr, rlang, tibble
 
+Package: foreach
+Source: CRAN
+Version: 1.4.4
+Hash: 4df5ab2c8c35382dacab75d414da6748
+Requires: iterators
+
 Package: fs
 Source: CRAN
 Version: 1.2.6
@@ -151,6 +186,11 @@ Package: glue
 Source: CRAN
 Version: 1.3.0
 Hash: 1fbde6dec830370be696eee8ef31c9e4
+
+Package: gower
+Source: CRAN
+Version: 0.2.0
+Hash: fefeee332f5a36c30e3d37cac6722d0d
 
 Package: gtable
 Source: CRAN
@@ -186,6 +226,17 @@ Version: 1.4.0
 Hash: 62d62d3ffcc9a34411b6e35a813f72dd
 Requires: R6, curl, jsonlite, mime, openssl
 
+Package: ipred
+Source: CRAN
+Version: 0.9-8
+Hash: e62aad78102d36d81ca4461cc465d310
+Requires: prodlim
+
+Package: iterators
+Source: CRAN
+Version: 1.0.10
+Hash: 9f8af91e4a3487a282d7dea67513e519
+
 Package: jsonlite
 Source: CRAN
 Version: 1.6
@@ -201,6 +252,12 @@ Package: labeling
 Source: CRAN
 Version: 0.3
 Hash: ecf589b42cd284b03a4beb9665482d3e
+
+Package: lava
+Source: CRAN
+Version: 1.6.5
+Hash: 64bfec181bf5b19f609ecdf60ea2cd8e
+Requires: SQUAREM, numDeriv
 
 Package: lazyeval
 Source: CRAN
@@ -245,6 +302,11 @@ Source: CRAN
 Version: 0.5.0
 Hash: 247d1c1d72f3072563912ef860758624
 Requires: colorspace
+
+Package: numDeriv
+Source: CRAN
+Version: 2016.8-1
+Hash: 3a9d0fc99ba2f6aaa500b3d584962be2
 
 Package: openssl
 Source: CRAN
@@ -291,6 +353,12 @@ Version: 3.2.1
 Hash: fdc6a66626b75f96ee28ffc770d9ebd7
 Requires: R6, ps
 
+Package: prodlim
+Source: CRAN
+Version: 2018.04.18
+Hash: aa9cdb9fb0879edb23aacb1e46f7f8d0
+Requires: Rcpp, lava
+
 Package: progress
 Source: CRAN
 Version: 1.2.0
@@ -319,6 +387,13 @@ Source: CRAN
 Version: 1.3.0
 Hash: dbc35779c08162b2d7821e83146501cb
 Requires: Rcpp, cellranger, progress, tibble
+
+Package: recipes
+Source: CRAN
+Version: 0.1.5
+Hash: 5b415aa0679317c80822f8c6d6e17798
+Requires: RcppRoll, dplyr, generics, glue, gower, ipred, lubridate,
+    magrittr, purrr, rlang, tibble, tidyr, tidyselect, timeDate, withr
 
 Package: rematch
 Source: CRAN
@@ -416,6 +491,11 @@ Requires: broom, cli, crayon, dbplyr, dplyr, forcats, ggplot2, haven,
     readxl, reprex, rlang, rstudioapi, rvest, stringr, tibble, tidyr,
     xml2
 
+Package: timeDate
+Source: CRAN
+Version: 3043.102
+Hash: bf9c128558c5730c3fbaf9ea5196e4bc
+
 Package: tinytex
 Source: CRAN
 Version: 0.10
@@ -446,6 +526,12 @@ Package: xfun
 Source: CRAN
 Version: 0.4
 Hash: 76004125b45195c0330ec71904849995
+
+Package: xgboost
+Source: CRAN
+Version: 0.82.1
+Hash: 41408633b829dccf2ed969e4e254c0ef
+Requires: data.table, magrittr, stringi
 
 Package: xml2
 Source: CRAN

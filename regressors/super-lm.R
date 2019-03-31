@@ -5,21 +5,24 @@ lm.result = function(models) {
     list(
         model = models,
         class = "lm",
-        fitted = function()
-            named.apply(names(models), function(x) models[[x]]$fitted.values)
-        ,
         predict = function(test_x)
             named.apply(names(models), function(x) predict(models[[x]], test_x))
     )
+}
+
+lm.prep = function(xs, proc=identity) {
+    proc(colnames(xs[sapply(xs, cardinality) != 1]))
 }
 
 lm_basic = list(
     name = "basic lm",
     train = function(train_x, train_y) {
         models = list()
+        nsp = function(x) paste0("`", x, "`")
+        cols = train_x %>% lm.prep() %>% sapply(nsp) %>% paste(collapse=" + ")
         for (name in colnames(train_y)) {
             models[[name]] =
-                paste(name, "~ .") %>%
+                paste(name, "~", cols) %>%
                 as.formula() %>%
                 lm(data=cbind(train_x, train_y))
         }
@@ -59,9 +62,10 @@ lm_reduced = list(
         nsp = function(x) paste0("`", x, "`")
 
         models = list()
+        cols = train_x %>% lm.prep() %>% sapply(nsp) %>% paste(collapse=" + ")
         for (name in colnames(train_y)) {
             sig.cols =
-                paste(name, "~ .") %>%
+                paste(name, "~", cols) %>%
                 as.formula() %>%
                 lm(data=cbind(train_x, train_y)) %>%
                 summary() %>%
@@ -118,10 +122,11 @@ lm_crossed = list(
         nsp = function(x) paste0("`", x, "`")
 
         models = list()
+        cols = train_x %>% lm.prep() %>% sapply(nsp) %>% paste(collapse=" + ")
         for (name in colnames(train_y)) {
             # find significant columns
             sig.cols =
-                paste(name, "~ .") %>%
+                paste(name, "~", cols) %>%
                 as.formula() %>%
                 lm(data=cbind(train_x, train_y)) %>%
                 summary() %>%
@@ -135,11 +140,12 @@ lm_crossed = list(
                 pull(var) %>%
                 unique() %>%
                 head(5) %>%
-                nsp()
+                nsp() %>%
+                paste(collapse=" * ")
 
             # then fit a new one based on those columns
             models[[name]] =
-                paste(nsp(name), "~", paste(sig.cols, collapse = " * ")) %>%
+                paste(nsp(name), "~", paste(cols, "+", sig.cols)) %>%
                 as.formula() %>%
                 lm(data=cbind(train_x, train_y))
         }
