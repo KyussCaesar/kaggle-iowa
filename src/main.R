@@ -56,12 +56,14 @@ process_regressor = function(regressor, train_x, train_y, test_x, test_y) {
 }
 
 regressors = list(
-    lm_basic,
-    xgboost10,
-    xgboost50,
-    xgboost100,
-    xgboost200
+    lm_basic
 )
+
+for (n in 20:40) {
+    for (d in 2:6) {
+        regressors <- append(regressors, list(mk.xgb.reg(n,d)))
+    }
+}
 
 big.results = n.cross.validate(regressors, 10, 10, train_x, train_y)
 big.test.error = lapply(big.results, function(x) x$test.error) %>% bind_rows()
@@ -70,6 +72,7 @@ big.results %>%
     lapply(function(x) x$test.error) %>%
     bind_rows() %>%
     rmsle() %>%
+    arrange(rmsle) %>%
     print() %>%
     ggplot(aes(x=predictor, y=rmsle, colour=class, fill=predictor)) +
     geom_col() +

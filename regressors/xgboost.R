@@ -1,5 +1,6 @@
 library(xgboost)
 
+# Convert factors to one-hot encoding and as.matrix
 prep.train = function(train_x) {
     trn = factors.to.one.hot(train_x)
     for (name in colnames(trn)) {
@@ -11,6 +12,7 @@ prep.train = function(train_x) {
     as.matrix(trn)
 }
 
+#' Prepare result from xgboost.
 xgb.result = function(models) {
     loginfo("Completed fitting an xgboost")
     list(
@@ -23,58 +25,22 @@ xgb.result = function(models) {
     )
 }
 
-xgboost10 = list(
-    name = "xgboost10",
-    train = function(train_x, train_y) {
-        models = list()
-        trn = prep.train(train_x)
-        for (name in colnames(train_y)) {
-            dtrain = xgb.DMatrix(data=trn, label=train_y[[name]])
-            models[[name]] = xgb.train(data=dtrain, nrounds=10)
-        }
-        
-        xgb.result(models)
-    }
-)
+#' Make an xgboost regressor.
+#' @param n xgboost nrounds param.
+#' @param d xgboost max_depth param.
+#' @return regressor
+mk.xgb.reg = function(n, d) {
+    list(
+        name = paste0("xgboost", n, "d", d),
+        train = function(train_x, train_y) {
+            models = list()
+            trn = prep.train(train_x)
+            for (name in colnames(train_y)) {
+                dtrain = xgb.DMatrix(data=trn, label=train_y[[name]])
+                models[[name]] = xgb.train(data=dtrain, nrounds=n, max_depth=d)
+            }
 
-xgboost50 = list(
-    name = "xgboost50",
-    train = function(train_x, train_y) {
-        models = list()
-        trn = prep.train(train_x)
-        for (name in colnames(train_y)) {
-            dtrain = xgb.DMatrix(data=trn, label=train_y[[name]])
-            models[[name]] = xgb.train(data=dtrain, nrounds=50)
+            xgb.result(models)
         }
-        
-        xgb.result(models)
-    }
-)
-
-xgboost100 = list(
-    name = "xgboost100",
-    train = function(train_x, train_y) {
-        models = list()
-        trn = prep.train(train_x)
-        for (name in colnames(train_y)) {
-            dtrain = xgb.DMatrix(data=trn, label=train_y[[name]])
-            models[[name]] = xgb.train(data=dtrain, nrounds=100)
-        }
-        
-        xgb.result(models)
-    }
-)
-
-xgboost200 = list(
-    name = "xgboost200",
-    train = function(train_x, train_y) {
-        models = list()
-        trn = prep.train(train_x)
-        for (name in colnames(train_y)) {
-            dtrain = xgb.DMatrix(data=trn, label=train_y[[name]])
-            models[[name]] = xgb.train(data=dtrain, nrounds=200)
-        }
-        
-        xgb.result(models)
-    }
-)
+    )
+}
