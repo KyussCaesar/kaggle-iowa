@@ -1,3 +1,4 @@
+loginfo("Loading xgboost regressors...")
 library(xgboost)
 
 # Convert factors to one-hot encoding and as.matrix

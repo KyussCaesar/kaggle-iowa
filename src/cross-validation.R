@@ -121,16 +121,17 @@ create.folds = function(df, n.folds) {
     mutate(row = as.numeric(rownames(df2)[row]))
 }
 
+
 #' Perform N rounds of K-fold cross validation.
 #' @param regressors the regressors to cross-validate.
 #' @param N the number of rounds to perform.
 #' @param K the number of folds to use.
 #' @param xs features
 #' @param ys targets
-n.cross.validate = function(regressors, N, K, xs, ys) {
-    paste("Performing", N, "rounds of", K, "fold cross-validation") %>% loginfo()
+n.cross.validate = function(regressors, ns, K, xs, ys) {
+    paste("Performing", length(ns), "rounds of", K, "fold cross-validation") %>% loginfo()
     result = list()
-    for (n in 1:N) {
+    for (n in ns) {
         paste("Beginning round", n) %>% loginfo()
         fold.index = create.folds(xs, K)
         for (k in 1:K) {
@@ -146,7 +147,9 @@ n.cross.validate = function(regressors, N, K, xs, ys) {
                 res = process_regressor(regressor, trn_x, trn_y, tst_x, tst_y)
                 res$test.error$cv.fold = k
                 res$test.error$cv.round = n
-                result <- append(result, list(res))
+                filename = sprintf("%s/%s-r%i-k%i.RDS", RESULT_DIR, regressor$name, n, k)
+                saveRDS(res, filename)
+                result <- append(result, filename)
             }
 
             paste("Fold", k, "complete") %>% loginfo()
@@ -154,6 +157,4 @@ n.cross.validate = function(regressors, N, K, xs, ys) {
 
         paste("Round", n, "complete") %>% loginfo()
     }
-    
-    return(result)
 }

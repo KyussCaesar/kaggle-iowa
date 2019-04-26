@@ -59,21 +59,32 @@ regressors = list(
     lm_basic
 )
 
-for (n in 20:40) {
-    for (d in 2:6) {
-        regressors <- append(regressors, list(mk.xgb.reg(n,d)))
-    }
+for (n in seq(100,500,10)) {
+    regressors <- append(regressors, list(mk.xgb.reg(n,2)))
 }
 
-big.results = n.cross.validate(regressors, 10, 10, train_x, train_y)
-big.test.error = lapply(big.results, function(x) x$test.error) %>% bind_rows()
-
-big.results %>%
-    lapply(function(x) x$test.error) %>%
-    bind_rows() %>%
-    rmsle() %>%
-    arrange(rmsle) %>%
-    print() %>%
-    ggplot(aes(x=predictor, y=rmsle, colour=class, fill=predictor)) +
-    geom_col() +
-    facet_wrap(~key, scales="free_y")
+RESULT_DIR = "ncv-results"
+n.cross.validate(regressors, 1:10, 10, train_x, train_y)
+# big.test.error = lapply(big.results, function(x) x$test.error) %>% bind_rows()
+# 
+# big.test.error %>%
+#     rmsle() %>%
+#     group_by(class) %>%
+#     arrange(rmsle) %>%
+#     dplyr::slice(1) %>%
+#     ungroup() %>%
+#     arrange(rmsle) %>%
+#     View()
+# 
+# big.test.error %>%
+#     rmsle() %>%
+#     filter(class == "xgboost") %>%
+#     mutate(params = str_extract_all(predictor, "\\d+")) %>%
+#     mutate(nrounds = params %>% map(~.x[1]) %>% unlist() %>% as.integer()) %>%
+#     mutate(max.depth = params %>% map(~.x[2]) %>% unlist() %>% as.factor()) %>%
+#     ggplot(aes(x=max.depth, y=rmsle)) +
+#     geom_boxplot()
+# 
+#     #ggplot(aes(x=predictor, y=rmsle, colour=class, fill=predictor)) +
+#     #geom_col() +
+#     #facet_wrap(~key, scales="free_y")
